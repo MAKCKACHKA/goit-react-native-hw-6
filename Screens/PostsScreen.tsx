@@ -27,25 +27,60 @@ import {
 } from "../assets/svgJS/svg";
 import { SvgXml } from "react-native-svg";
 import { useNavigation, useRoute } from "@react-navigation/native";
-// import { nanoid } from "nanoid";
+
+import { useDispatch, useSelector } from "react-redux";
+import {
+  addPost,
+  auth,
+  authStateChanged,
+  getD,
+  getData,
+  userData,
+} from "../config";
 
 const PostsScreen = ({ route, navigation }) => {
-  const [posts, setPosts] = useState([
-    // { name: "adasdadasd", location: "sadasdasd", image: image },
-  ]);
+  const dispatch = useDispatch();
+  // const [posts, setPosts] = useState([
+  //   // { name: "adasdadasd", location: "sadasdasd", image: image },
+  // ]);
+  const setData = (value) => dispatch(setData(value));
 
-  const { name, location, image, userLocation } = route.params;
+  const { uid } = useSelector((state: any) => state.auth);
 
   useEffect(() => {
-    const newPost = {
-      id: Math.random(),
-      name: name,
-      location: location,
-      userLocation: userLocation,
-      image: image,
-    };
-    setPosts((prevPosts) => [...prevPosts, newPost]);
-  }, [name, location, image]);
+    getD(uid);
+    authStateChanged();
+    const data = authStateChanged();
+    console.log(data);
+
+    console.log("auth", auth);
+  }, []);
+
+  // const { name, location, image, userLocation } = route.params;
+  const [userDataLoaded, setUserDataLoaded] = useState(false);
+
+  useEffect(() => {
+    // const newPost = {
+    //   id: Math.random(),
+    //   name: name,
+    //   location: location,
+    //   userLocation: userLocation,
+    //   image: image,
+    // };
+    // setPosts((prevPosts) => [...prevPosts, newPost]);
+    getD(uid)
+      .then(() => setUserDataLoaded(true)) // Встановлюємо userDataLoaded в true, коли дані завантажені
+      .catch((error) => console.error("Пом отрим дан:", error));
+
+    // if (userData !== null) {
+    //   getD(uid);
+    // }
+    if (userDataLoaded) {
+      // getD(uid);
+    }
+  }, [userData, userDataLoaded, addPost]);
+
+  // const inf = getD(uid);
 
   return (
     <View style={styles.wrapper}>
@@ -84,12 +119,20 @@ const PostsScreen = ({ route, navigation }) => {
               source={require("../assets/favicon.png")}
             />
             <View style={styles.profileDataText}>
-              <Text style={styles.profileName}>Natali Romanova{}</Text>
-              <Text style={styles.profileEmail}>email@example.com</Text>
+              <Text style={styles.profileName}>
+                {/* Natali Romanova */}
+                {userData && userData.displayName}
+                {userData && userData.uid}
+              </Text>
+              <Text style={styles.profileEmail}>
+                {/* email@example.com */}
+                {/* {uData} */}
+                {userData && userData.email}
+              </Text>
             </View>
           </View>
           <View style={styles.publications}>
-            <View style={styles.publication}>
+            {/* <View style={styles.publication}>
               <Image
                 style={styles.publicationImg}
                 source={require("../assets/favicon.png")}
@@ -97,30 +140,30 @@ const PostsScreen = ({ route, navigation }) => {
               <Text style={styles.publicationDescription}>Ліс</Text>
               <View style={styles.publicationInfo}>
                 <View style={styles.publicationElem}>
-                  <SvgXml xml={messageCircle} style={styles.svg} />
+                  <SvgXml xml={messageCircle} style={styles.svg} /> */}
 
-                  {/* <Image
+            {/* <Image
                     style={styles.svg}
                     source={require("../assets/svg/messageCircle.svg")}
                   /> */}
 
-                  <Text style={styles.publicationsComentNumber}>0</Text>
+            {/* <Text style={styles.publicationsComentNumber}>0</Text>
                 </View>
                 <View style={styles.publicationElem}>
-                  <SvgXml xml={mapPin} style={styles.svg} />
-                  {/* <Image
+                  <SvgXml xml={mapPin} style={styles.svg} /> */}
+            {/* <Image
                     style={styles.svg}
                     source={require("../assets/svg/mapPin.svg")}
                   /> */}
-                  <Text style={styles.publicationLocation}>
+            {/* <Text style={styles.publicationLocation}>
                     Ivano-Frankivs'k Region, Ukraine
                   </Text>
                 </View>
               </View>
-            </View>
+            </View> */}
 
-            {image !== "" &&
-              posts
+            {userData !== null &&
+              userData.posts
                 .filter((post) => post.name !== "")
                 .map((post) => {
                   return (

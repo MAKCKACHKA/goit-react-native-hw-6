@@ -17,12 +17,70 @@ import {
 
 import { useNavigation } from "@react-navigation/native";
 
+import {
+  createUserWithEmailAndPassword,
+  getAuth,
+  signInWithEmailAndPassword,
+  updateProfile,
+} from "firebase/auth";
+import { initializeApp } from "firebase/app";
+// import { app, auth, firebaseConfig } from "../config";
+// import { app, auth } from "../config";
+import { getDatabase, ref, set, update } from "firebase/database";
+import {
+  collection,
+  doc,
+  getFirestore,
+  setDoc,
+  updateDoc,
+} from "firebase/firestore";
+
+import { useDispatch, useSelector } from "react-redux";
+import {
+  changeLogin,
+  changeEmail,
+  changePassword,
+  changeUid,
+} from "../redux/authSlice";
+import { docUid, handleRegistration, signUp } from "../config";
+
+// const firebaseConfig = {
+//   apiKey: "AIzaSyBNLU6QRyBo-vfZAzYVxwl3AIlgJH7x4qo",
+//   authDomain: "react-native-hw-4fea8.firebaseapp.com",
+//   databaseURL:
+//     "https://react-native-hw-4fea8-default-rtdb.europe-west1.firebasedatabase.app",
+//   projectId: "react-native-hw-4fea8",
+//   storageBucket: "react-native-hw-4fea8.appspot.com",
+//   messagingSenderId: "1046278970744",
+//   appId: "1:1046278970744:web:f0dd789fc7053d2b51bc8d",
+// };
+
+// export const app = initializeApp(firebaseConfig);
+// export const auth = getAuth(app);
+
 const RegistrationScreen = () => {
   const navigation = useNavigation();
 
-  const [login, setLogin] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const { login, email, password, uid } = useSelector(
+    (state: any) => state.auth
+  );
+
+  const dispatch = useDispatch();
+  const setLogin = (value) => dispatch(changeLogin(value));
+  const setEmail = (value) => dispatch(changeEmail(value));
+  const setPassword = (value) => dispatch(changePassword(value));
+  const setUid = (value) => dispatch(changeUid(value));
+
+  useEffect(() => {
+    if (docUid !== "") {
+      setUid(docUid);
+    }
+  }, [docUid]);
+
+  // const [login, setLogin] = useState("");
+  // const [email, setEmail] = useState("");
+  // const [password, setPassword] = useState("");
+
   const [showPassword, setShowPassword] = useState(false);
 
   const [loginFocused, setLoginFocused] = useState(false);
@@ -33,12 +91,80 @@ const RegistrationScreen = () => {
     setShowPassword(!showPassword);
   };
 
-  const handleRegistration = () => {
-    console.log(`login: ${login}, email: ${email}, password: ${password}`);
-    setLogin("");
-    setEmail("");
-    setPassword("");
-  };
+  // const handleRegistrat = async (email, password, login) => {
+  //   try {
+  //     const createUser = await createUserWithEmailAndPassword(
+  //       auth,
+  //       email,
+  //       password
+  //     );
+  //     await updateProfile(createUser.user, {
+  //       displayName: login,
+  //     });
+
+  //     // const postsCol = collection(db, "posts");
+
+  //     console.log("!!!!Успішна реєстрація:");
+  //     console.log(createUser.user.uid);
+  //   } catch {
+  //     (error) => {
+  //       // console.log(auth);
+  //       console.error("Помилка реєстрації:", error);
+  //     };
+  //   }
+  // };
+
+  // const signU = async () => {
+  //   try {
+  //     const signUp = await signInWithEmailAndPassword(auth, email, password);
+  //     // console.log(signUp.user);
+  //     const db = getFirestore(app);
+  //     const firestor = getFirestore();
+
+  //     const day = doc(firestor, `users/${signUp.user.uid}`);
+
+  //     // function test() {
+  //     const docData = {
+  //       // userData: {
+  //       //   displayName: signUp.user.displayName,
+  //       //   uid: signUp.user.uid,
+  //       //   email: signUp.user.email,
+
+  //       //   photoURL: signUp.user.photoURL,
+  //       // },
+  //       posts: [
+  //         {
+  //           id: Math.random(),
+  //           // name: name,
+  //           // location: location,
+  //           // userLocation: userLocation,
+  //           // image: image,
+  //           coments: { word: "asdsadasdas" },
+  //         },
+  //         { id: Math.random() },
+  //       ],
+  //     };
+  //     // updateDoc(doc(db, "users", signUp.user.uid), docData);
+  //     setDoc(doc(db, "users", signUp.user.uid), docData);
+
+  //     // setDoc(day, docData, { merge: true });
+  //     // updateDoc(day, docData);
+  //     // }
+  //     // test();
+
+  //     // console.log(`email: ${email}, password: ${password}`);
+  //     console.log("!!!!!!!!!Успішний вхід:");
+
+  //     // navigation.navigate("Home");
+
+  //     // setEmail("");
+  //     // setPassword("");
+  //     // setLogin("")
+  //   } catch (error) {
+  //     // console.log(auth);
+  //     console.error("Помилка входу:", error);
+  //   }
+  // };
 
   return (
     <ImageBackground
@@ -105,10 +231,18 @@ const RegistrationScreen = () => {
 
             <Pressable
               style={styles.registerButton}
-              // onPress={handleRegistration}
               onPress={() => {
-                handleRegistration;
-                navigation.navigate("Home");
+                handleRegistration(email, password, login);
+                setTimeout(() => {
+                  signUp(email, password);
+                  if (docUid !== "") {
+                    setUid(docUid);
+                    console.log("docUid змінено");
+                  }
+                  navigation.navigate("Home");
+                }, 1000);
+
+                // setPassword("");
               }}
             >
               <Text style={styles.registerButtonText}>Зареєструватися</Text>

@@ -38,14 +38,14 @@ const CommentsScreen = ({ route, navigation }) => {
         <View style={styles.header}>
           <Text style={styles.title}>Коментарі{id}</Text>
           <View style={styles.headerLeft}>
-            <Image
+            {/* <Image
               style={[styles.svg, { alignSelf: "center" }]}
               source={require("../assets/svg/arrowLeft.svg")}
-            />
-            {/* <SvgXml
+            /> */}
+            <SvgXml
               xml={arrowLeft}
               style={[styles.svg, { alignSelf: "center", top: 10 }]}
-            /> */}
+            />
           </View>
         </View>
 
@@ -166,11 +166,11 @@ const CommentsScreen = ({ route, navigation }) => {
                 onBlur={() => setinputFocused(false)}
               />
               <Pressable onPress={handleSend}>
-                <Image
+                {/* <Image
                   style={styles.send}
                   source={require("../assets/svg/Send.svg")}
-                />
-                {/* <SvgXml xml={Send} style={styles.send} /> */}
+                /> */}
+                <SvgXml xml={Send} style={styles.send} />
               </Pressable>
             </View>
           </KeyboardAvoidingView>

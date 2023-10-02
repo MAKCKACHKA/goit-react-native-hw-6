@@ -22,7 +22,12 @@ import { SvgUri } from "react-native-svg";
 //                     <SVGImg width={200} height={200} />;
 import { useNavigation, useRoute } from "@react-navigation/native";
 
-import { messageCircle, mapPin, logOutSvg } from "../assets/svgJS/svg";
+import {
+  messageCircle,
+  mapPin,
+  logOutSvg,
+  thumbsUp,
+} from "../assets/svgJS/svg";
 
 const ProfileScreen = () => {
   //   const [login, setLogin] = useState("");
@@ -56,11 +61,11 @@ const ProfileScreen = () => {
             <View style={styles.wrapper}>
               <View style={styles.container}>
                 <View style={styles.headerRight}>
-                  <Image
+                  {/* <Image
                     style={[styles.svg]}
                     source={require("../assets/svg/logOut.svg")}
-                  />
-                  {/* <SvgXml xml={logOutSvg} style={styles.svg} /> */}
+                  /> */}
+                  <SvgXml xml={logOutSvg} style={styles.svg} />
                 </View>
                 <Image
                   style={styles.UserImage}
@@ -76,13 +81,13 @@ const ProfileScreen = () => {
                   <Text style={styles.publicationDescription}>Ліс</Text>
                   <View style={styles.publicationInfo}>
                     <View style={styles.publicationElem}>
-                      {/* <SvgXml xml={messageCircle} style={[[styles.svg]]} /> */}
                       {comentNumber === 0 ? (
-                        <Image
-                          style={[[styles.svg]]}
-                          source={require("../assets/svg/messageCircle.svg")}
-                          //   source={require("../assets/svg/thumbsUp.svg")}
-                        />
+                        // <Image
+                        //   style={[[styles.svg]]}
+                        //   source={require("../assets/svg/messageCircle.svg")}
+                        //   //   source={require("../assets/svg/thumbsUp.svg")}
+                        // />
+                        <SvgXml xml={messageCircle} style={[[styles.svg]]} />
                       ) : (
                         <Image
                           style={[[styles.svg]]}
@@ -95,10 +100,11 @@ const ProfileScreen = () => {
                         {comentNumber}
                       </Text>
                       {likeNumber === 0 ? (
-                        <Image
-                          style={[[styles.svg], { marginLeft: 24 }]}
-                          source={require("../assets/svg/thumbsUp.svg")}
-                        />
+                        // <Image
+                        //   style={[[styles.svg], { marginLeft: 24 }]}
+                        //   source={require("../assets/svg/thumbsUp.svg")}
+                        // />
+                        <SvgXml xml={thumbsUp} style={[[styles.svg]]} />
                       ) : (
                         <Image
                           style={[[styles.svg], { marginLeft: 24 }]}
@@ -111,115 +117,11 @@ const ProfileScreen = () => {
                       </Text>
                     </View>
                     <View style={styles.publicationElem}>
-                      {/* <SvgXml xml={mapPin} style={styles.svg} /> */}
-                      <Image
+                      <SvgXml xml={mapPin} style={styles.svg} />
+                      {/* <Image
                         style={styles.svg}
                         source={require("../assets/svg/mapPin.svg")}
-                      />
-                      <Text style={styles.publicationLocation}>Ukraine</Text>
-                    </View>
-                  </View>
-                </View>
-                <View style={styles.publication}>
-                  <Image
-                    style={styles.publicationImg}
-                    source={require("../assets/favicon.png")}
-                  />
-                  <Text style={styles.publicationDescription}>Ліс</Text>
-                  <View style={styles.publicationInfo}>
-                    <View style={styles.publicationElem}>
-                      {/* <SvgXml xml={messageCircle} style={[[styles.svg]]} /> */}
-                      {comentNumber === 0 ? (
-                        <Image
-                          style={[[styles.svg]]}
-                          source={require("../assets/svg/messageCircle.svg")}
-                          //   source={require("../assets/svg/thumbsUp.svg")}
-                        />
-                      ) : (
-                        <Image
-                          style={[[styles.svg]]}
-                          source={require("../assets/svg/messageCircleFill.svg")}
-                          //   source={require("../assets/svg/thumbsUp.svg")}
-                        />
-                      )}
-
-                      <Text style={styles.publicationsNumber}>
-                        {comentNumber}
-                      </Text>
-                      {likeNumber === 0 ? (
-                        <Image
-                          style={[[styles.svg], { marginLeft: 24 }]}
-                          source={require("../assets/svg/thumbsUp.svg")}
-                        />
-                      ) : (
-                        <Image
-                          style={[[styles.svg], { marginLeft: 24 }]}
-                          source={require("../assets/svg/thumbsUpFill.svg")}
-                        />
-                      )}
-
-                      <Text style={styles.publicationsNumber}>
-                        {likeNumber}
-                      </Text>
-                    </View>
-                    <View style={styles.publicationElem}>
-                      {/* <SvgXml xml={mapPin} style={styles.svg} /> */}
-                      <Image
-                        style={styles.svg}
-                        source={require("../assets/svg/mapPin.svg")}
-                      />
-                      <Text style={styles.publicationLocation}>Ukraine</Text>
-                    </View>
-                  </View>
-                </View>
-                <View style={styles.publication}>
-                  <Image
-                    style={styles.publicationImg}
-                    source={require("../assets/favicon.png")}
-                  />
-                  <Text style={styles.publicationDescription}>Ліс</Text>
-                  <View style={styles.publicationInfo}>
-                    <View style={styles.publicationElem}>
-                      {/* <SvgXml xml={messageCircle} style={[[styles.svg]]} /> */}
-                      {comentNumber === 0 ? (
-                        <Image
-                          style={[[styles.svg]]}
-                          source={require("../assets/svg/messageCircle.svg")}
-                          //   source={require("../assets/svg/thumbsUp.svg")}
-                        />
-                      ) : (
-                        <Image
-                          style={[[styles.svg]]}
-                          source={require("../assets/svg/messageCircleFill.svg")}
-                          //   source={require("../assets/svg/thumbsUp.svg")}
-                        />
-                      )}
-
-                      <Text style={styles.publicationsNumber}>
-                        {comentNumber}
-                      </Text>
-                      {likeNumber === 0 ? (
-                        <Image
-                          style={[[styles.svg], { marginLeft: 24 }]}
-                          source={require("../assets/svg/thumbsUp.svg")}
-                        />
-                      ) : (
-                        <Image
-                          style={[[styles.svg], { marginLeft: 24 }]}
-                          source={require("../assets/svg/thumbsUpFill.svg")}
-                        />
-                      )}
-
-                      <Text style={styles.publicationsNumber}>
-                        {likeNumber}
-                      </Text>
-                    </View>
-                    <View style={styles.publicationElem}>
-                      {/* <SvgXml xml={mapPin} style={styles.svg} /> */}
-                      <Image
-                        style={styles.svg}
-                        source={require("../assets/svg/mapPin.svg")}
-                      />
+                      /> */}
                       <Text style={styles.publicationLocation}>Ukraine</Text>
                     </View>
                   </View>
