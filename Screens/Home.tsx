@@ -54,11 +54,11 @@ const Home = () => {
             // && focusedCreatePosts === false
           ) {
             return (
-              <Image
-                style={styles.svg}
-                source={require("../assets/svg/grid.svg")}
-              />
-              // <SvgXml xml={gridSvg} style={styles.svg} />
+              // <Image
+              //   style={styles.svg}
+              //   source={require("../assets/svg/grid.svg")}
+              // />
+              <SvgXml xml={gridSvg} style={styles.svg} />
             );
           } else if (route.name === "Створити пост") {
             return (
@@ -67,27 +67,27 @@ const Home = () => {
               //     navigation.navigate("CreatePostsScreen");
               //   }}
               // >
-              <Image
-                style={styles.createBtn}
-                source={require("../assets/svg/plusBtn.svg")}
-              />
+              // <Image
+              //   style={styles.createBtn}
+              //   source={require("../assets/svg/plusBtn.svg")}
+              // />
               // </Pressable>
 
-              // <SvgXml xml={plusBtnSvg} style={styles.svg} />
+              <SvgXml xml={plusBtnSvg} style={styles.svg} />
             );
           } else if (route.name === "Профіль") {
             return (
-              <Image
-                style={styles.svg}
-                source={require("../assets/svg/user.svg")}
-              />
-              // <SvgXml xml={userSvg} style={styles.svg} />
+              // <Image
+              //   style={styles.svg}
+              //   source={require("../assets/svg/user.svg")}
+              // />
+              <SvgXml xml={userSvg} style={styles.svg} />
             );
           }
         },
         tabBarStyle: styles.toolbar,
         // headerShown: false,
-        showLabel: false,
+        // showLabel: false,
         headerTitleAlign: "center",
       })}
       // tabBarOptions={{

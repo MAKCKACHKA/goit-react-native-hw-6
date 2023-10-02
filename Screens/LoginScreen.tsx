@@ -17,11 +17,24 @@ import {
 
 import { useNavigation } from "@react-navigation/native";
 
+import { useDispatch, useSelector } from "react-redux";
+import {
+  changeEmail,
+  changeLogin,
+  changePassword,
+  changeUid,
+} from "../redux/authSlice";
+import {
+  // getData,
+  signUp,
+  docUid,
+} from "../config";
+
 const LoginScreen = () => {
   const navigation = useNavigation();
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  // const [email, setEmail] = useState("");
+  // const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [emailFocused, setEmailFocused] = useState(false);
   const [passwordFocused, setPasswordFocused] = useState(false);
@@ -30,11 +43,25 @@ const LoginScreen = () => {
     setShowPassword(!showPassword);
   };
 
-  const handleLogin = () => {
-    console.log(`email: ${email}, password: ${password}`);
-    setEmail("");
-    setPassword("");
-  };
+  const { email, password, uid } = useSelector((state: any) => state.auth);
+
+  const dispatch = useDispatch();
+  const setEmail = (value) => dispatch(changeEmail(value));
+  const setPassword = (value) => dispatch(changePassword(value));
+
+  const setUid = (value) => dispatch(changeUid(value));
+
+  useEffect(() => {
+    if (docUid !== "") {
+      setUid(docUid);
+    }
+  }, [docUid]);
+
+  // const handleLogin = () => {
+  //   console.log(`email: ${email}, password: ${password}`);
+  //   setEmail("");
+  //   setPassword("");
+  // };
 
   return (
     <ImageBackground
@@ -47,7 +74,10 @@ const LoginScreen = () => {
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.wrapper}>
           <View style={styles.container}>
-            <Text style={styles.title}>Увійти</Text>
+            <Text style={styles.title}>
+              Увійти
+              {/* {uid} */}
+            </Text>
 
             <KeyboardAvoidingView
               behavior={Platform.OS == "ios" ? "padding" : undefined}
@@ -97,8 +127,16 @@ const LoginScreen = () => {
                 style={styles.registerButton}
                 // onPress={handleLogin}
                 onPress={() => {
-                  handleLogin;
+                  // handleLogin;
+                  // getData();
+                  signUp(email, password);
+                  if (docUid !== "") {
+                    setUid(docUid);
+                    console.log("docUid pvsyty");
+                  }
+
                   navigation.navigate("Home");
+                  // setPassword("");
                 }}
               >
                 <Text style={styles.registerButtonText}>Увійти</Text>

@@ -28,6 +28,8 @@ import * as MediaLibrary from "expo-media-library";
 
 import MapView, { Marker } from "react-native-maps";
 import * as Location from "expo-location";
+import { addPost } from "../config";
+import { useDispatch, useSelector } from "react-redux";
 
 const CreatePostsScreen = ({ navigation }) => {
   const [name, setName] = useState("");
@@ -87,17 +89,32 @@ const CreatePostsScreen = ({ navigation }) => {
   //     // title: "sadasd",
   //   });
   // }, []);
+  const { uid } = useSelector((state: any) => state.auth);
+
   const handlePublish = async () => {
-    navigation.navigate("Публікації", {
+    // if (name !== "" && location !== "" && image !== "") {
+    addPost(uid, {
+      id: Math.random(),
       name: name,
       location: location,
       userLocation: userLocation,
       image: image,
     });
+    // }
+
     setName("");
     setImage("");
     setLocation("");
     setUserLocation(null);
+
+    // setTimeout(() => {
+    navigation.navigate("Публікації", {
+      // name: name,
+      // location: location,
+      // userLocation: userLocation,
+      // image: image,
+    });
+    // }, 5000);
   };
 
   function degreesToRadians(angle) {
@@ -144,12 +161,12 @@ const CreatePostsScreen = ({ navigation }) => {
                 source={require("../assets/svg/camera.svg")}
               /> */}
                 {/* <SvgXml xml={camera} style={[styles.svg]} /> */}
-                <Image
+                {/* <Image
                   style={styles.svg}
                   tintColor={"rgba(189, 189, 189, 1)"}
                   source={require("../assets/svg/cameraBlack.svg")}
-                />
-                {/* <SvgXml xml={cameraBlack} style={[styles.svg]} /> */}
+                /> */}
+                <SvgXml xml={cameraBlack} style={[styles.svg]} />
               </Pressable>
             </View>
             {image === "" ? (
@@ -178,10 +195,12 @@ const CreatePostsScreen = ({ navigation }) => {
                   locationFocused === true && styles.focusedInput,
                 ]}
               >
-                <Image
+                {/* <Image
                   style={styles.svg}
                   source={require("../assets/svg/mapPin.svg")}
-                />
+                /> */}
+                <SvgXml xml={mapPin} style={styles.svg} />
+
                 <TextInput
                   value={location}
                   style={styles.locationInput}
@@ -254,11 +273,11 @@ const CreatePostsScreen = ({ navigation }) => {
 
               <View style={styles.toolbar}>
                 <Pressable style={styles.delBtn}>
-                  <Image
+                  {/* <Image
                     style={styles.svg}
                     source={require("../assets/svg/trash.svg")}
-                  />
-                  {/* <SvgXml xml={trash} style={styles.svg} /> */}
+                  /> */}
+                  <SvgXml xml={trash} style={styles.svg} />
                 </Pressable>
               </View>
             </KeyboardAvoidingView>

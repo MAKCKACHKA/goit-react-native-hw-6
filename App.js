@@ -12,10 +12,7 @@ import {
 } from "react-native";
 import { useFonts } from "expo-font";
 
-// import CreatePostsScreen from "./Screens/PostsScreen";
 import SVGImg from "./assets/svg/logOut.svg";
-// import logOutSvgComponent from "./assets/svg/logOut.svg";
-// import logOutSvgComponent from "./assets/svgComponent/svgLogOut";
 import { SvgXml } from "react-native-svg";
 
 import LoginScreen from "./Screens/LoginScreen";
@@ -33,6 +30,10 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 
 import { useState } from "react";
 import MapScreen from "./Screens/MapScreen";
+import { store, persistor } from "./redux/store";
+
+import { Provider } from "react-redux";
+import { PersistGate } from "redux-persist/integration/react";
 
 const MainStack = createStackNavigator();
 const App = () => {
@@ -43,80 +44,82 @@ const App = () => {
   });
   // const navigation = useNavigation();
 
-  // const [title, setTitle] = useState("Home");
-
   return (
-    <NavigationContainer>
-      <MainStack.Navigator
-        initialRouteName="Login"
-        screenOptions={{
-          headerTitleAlign: "center",
-          headerShown: false,
-        }}
-      >
-        <MainStack.Screen
-          name="Login"
-          component={LoginScreen}
-          // options={{ title: "Start screen" }}
-          options={{
-            headerShown: false,
-          }}
-        />
-        <MainStack.Screen
-          name="Registration"
-          component={RegistrationScreen}
-          options={{
-            headerShown: false,
-          }}
-        />
-        <MainStack.Screen
-          name="Home"
-          component={Home}
-          options={{
-            title: "Home",
-            headerStyle: {
-              // justifyContent: "center",
-              // backgroundColor: "#f4511e",
-              // height: 1,
-              // display: "none",
-              // marginadding: 100,
-              // alignItems: "center",
-            },
-            // headerTintColor: "#fff",
-            headerTitleStyle: {
-              // left: "50vh",
-              // fontWeight: "bold",
-              fontSize: 26,
-            },
-            headerRight: () => (
-              <TouchableOpacity
-                // onPress={() => navigation.navigate("Login")}
-                style={styles.headerRight}
-              >
-                <Image
-                  style={[styles.svg]}
-                  source={require("./assets/favicon.png")}
-                />
-              </TouchableOpacity>
-            ),
-          }}
-        />
-        <MainStack.Screen name="Comments" component={CommentsScreen} />
-        <MainStack.Screen
-          name="MapScreen"
-          component={MapScreen}
-          initialParams={{ location: "", Image: "" }}
-        />
+    <Provider store={store}>
+      <PersistGate loading={null} persistor={persistor}>
+        <NavigationContainer>
+          <MainStack.Navigator
+            initialRouteName="Login"
+            screenOptions={{
+              headerTitleAlign: "center",
+              headerShown: false,
+            }}
+          >
+            <MainStack.Screen
+              name="Login"
+              component={LoginScreen}
+              // options={{ title: "Start screen" }}
+              options={{
+                headerShown: false,
+              }}
+            />
+            <MainStack.Screen
+              name="Registration"
+              component={RegistrationScreen}
+              options={{
+                headerShown: false,
+              }}
+            />
+            <MainStack.Screen
+              name="Home"
+              component={Home}
+              options={{
+                title: "Home",
+                headerStyle: {
+                  // justifyContent: "center",
+                  // backgroundColor: "#f4511e",
+                  // height: 1,
+                },
+                // headerTintColor: "#fff",
+                headerTitleStyle: {
+                  // left: "50vh",
+                  // fontWeight: "bold",
+                  fontSize: 26,
+                },
+                headerRight: () => (
+                  <TouchableOpacity
+                    // onPress={() => navigation.navigate("Login")}
+                    style={styles.headerRight}
+                  >
+                    <Image
+                      style={[styles.svg]}
+                      source={require("./assets/favicon.png")}
+                    />
+                  </TouchableOpacity>
+                ),
+              }}
+            />
+            <MainStack.Screen name="Comments" component={CommentsScreen} />
+            <MainStack.Screen
+              name="MapScreen"
+              component={MapScreen}
+              initialParams={{ location: "", Image: "" }}
+            />
 
-        <MainStack.Screen name="Profile" component={ProfileScreen} />
-        <MainStack.Screen
-          name="PostsScreen"
-          component={PostsScreen}
-          initialParams={{ name: "", location: "", Image: "" }}
-        />
-        <MainStack.Screen name="Create Posts" component={CreatePostsScreen} />
-      </MainStack.Navigator>
-    </NavigationContainer>
+            <MainStack.Screen name="Profile" component={ProfileScreen} />
+            <MainStack.Screen
+              name="PostsScreen"
+              component={PostsScreen}
+              initialParams={{ name: "", location: "", Image: "" }}
+            />
+            <MainStack.Screen
+              name="Create Posts"
+              component={CreatePostsScreen}
+            />
+          </MainStack.Navigator>
+        </NavigationContainer>
+      </PersistGate>
+    </Provider>
   );
 };
 
