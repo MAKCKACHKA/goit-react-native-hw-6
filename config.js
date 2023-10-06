@@ -1,14 +1,11 @@
 import {
   createUserWithEmailAndPassword,
   getAuth,
-  onAuthStateChanged,
   signInWithEmailAndPassword,
   signOut,
   updateProfile,
 } from "firebase/auth";
 import { initializeApp } from "firebase/app";
-
-import { getDatabase, ref, set, update } from "firebase/database";
 
 import {
   collection,
@@ -20,10 +17,18 @@ import {
   query,
   where,
   arrayUnion,
+  getDoc,
 } from "firebase/firestore";
 
 import { initializeAuth, getReactNativePersistence } from "firebase/auth";
 import ReactNativeAsyncStorage from "@react-native-async-storage/async-storage";
+import {
+  changePosts,
+  changeUid,
+  changeNickName,
+  changeUserPosts,
+  updateUserProfile,
+} from "./redux/authSlice";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBNLU6QRyBo-vfZAzYVxwl3AIlgJH7x4qo",
@@ -36,18 +41,14 @@ const firebaseConfig = {
   appId: "1:1046278970744:web:f0dd789fc7053d2b51bc8d",
 };
 
-// import { initializeAuth, getReactNativePersistence } from "firebase/auth";
-// import ReactNativeAsyncStorage from "@react-native-async-storage/async-storage";
-
 const app = initializeApp(firebaseConfig);
-export const auth = initializeAuth(app, {
+
+// const auth = getAuth();
+const auth = initializeAuth(app, {
   persistence: getReactNativePersistence(ReactNativeAsyncStorage),
 });
-// const auth = initializeAuth(app, {
-//   persistence: getReactNativePersistence(ReactNativeAsyncStorage),
-// });
 
-export let docUid = "";
+const db = getFirestore(app);
 
 export const handleRegistration = async (email, password, login) => {
   try {
@@ -68,17 +69,9 @@ export const handleRegistration = async (email, password, login) => {
       displayName: createUser.user.displayName,
       email: createUser.user.email,
       photoURL: createUser.user.photoURL,
-      posts: [],
     };
-    // updateDoc(doc(db, "users", createUser.user.uid), docData);
     setDoc(doc(db, "users", createUser.user.uid), docData);
-
-    docUid = createUser.user.uid;
-    console.log(`${docUid} docUid docUid docUid`);
-
-    // const postsCol = collection(db, "posts");
     console.log("!!!!!!Успішна реєстрація:", createUser.user.uid);
-    // console.log(createUser.user.uid);
   } catch {
     (error) => {
       // console.log(auth);
@@ -87,81 +80,112 @@ export const handleRegistration = async (email, password, login) => {
   }
 };
 
-export const signUp = async (email, password) => {
+export const signUp = async (dispatch, email, password) => {
   try {
     const signUp = await signInWithEmailAndPassword(auth, email, password);
     // console.log(signUp.user);
-    docUid = signUp.user.uid;
+    console.log("!!!!!!!!!Успішний вхід:", signUp.user.uid);
 
-    // console.log("!!!!!!!!!Успішний вхід:", signUp.user.uid);
-    // console.log(docUid);
+    dispatch(changeNickName(signUp.user.displayName));
+    dispatch(changeUid(signUp.user.uid));
   } catch (error) {
-    // console.log(auth);
     console.error("Помилка входу:", error);
   }
 };
 
-export const logOut = async () => {
+export const logOut = async (dispatch) => {
   await signOut(auth);
-  docUid = "";
+  dispatch(changePosts(null));
+  dispatch(changeUserPosts(null));
 };
 
-export const authStateChanged = async (onChange = () => {}) => {
-  onAuthStateChanged(auth, (user) => {
-    onChange(user);
-    console.log("authStateChanged", user.uid);
-    const data = user.data();
-    return data;
-    // console.log("onAuthStateChangedonAuthuthStateChanged", auth);
-  });
-};
-
-export const getData = async () => {
+export const createPost = async (newPost) => {
   try {
     const db = getFirestore(app);
-    const uid = "lSoS3DkyYXdYEwvd0Ud7xNLmCNg2";
-    const q = query(collection(db, "users"), where("uid", "==", uid));
-    const querySnapshot = await getDocs(q);
 
-    // querySnapshot.forEach((doc) => {
-    //   console.log(`${doc.id} => ${doc.data().userData.displayName}`);
-    // });
+    await setDoc(doc(db, "posts", newPost.id), newPost);
+    console.log("createPost: Пост створено", newPost);
   } catch (error) {
-    console.error("Помилка отримання даних:", error);
+    console.error("createPost: Помилка створення посту", error);
   }
 };
 
-export let userData = null;
-
-export const getD = async (uid) => {
+export const getPosts = async (setPosts) => {
   try {
     const db = getFirestore(app);
-    // const uid = "lSoS3DkyYXdYEwvd0Ud7xNLmCNg2";
-    const q = query(collection(db, "users"), where("uid", "==", uid));
-    const querySnapshot = await getDocs(q);
+    const querySnapshot = await getDocs(collection(db, "posts"));
 
+    const posts = [];
     querySnapshot.forEach((doc) => {
-      userData = doc.data();
+      const postData = doc.data();
+      posts.push(postData);
+      // console.log(doc.data());
     });
-    // console.log(userData);
-
-    // console.log("отримано дані:", uid);
-
-    return userData;
+    setPosts(posts);
   } catch (error) {
-    console.error("Помилка отримати дані:", error);
+    console.error("Помилка отримання постів користувача:", error);
   }
 };
 
-export const addPost = (uid, newData) => {
+export const getUserPosts = async (setUserPosts, uid) => {
   try {
     const db = getFirestore(app);
-    updateDoc(doc(db, "users", uid), {
-      posts: arrayUnion(newData),
+    const q = query(collection(db, "posts"), where("uid", "==", uid));
+    const querySnapshot = await getDocs(q);
+
+    const posts = [];
+    querySnapshot.forEach((doc) => {
+      const postData = doc.data();
+      posts.push(postData);
     });
-    // console.log(newData);
-    console.log("Дані успішно додані до вмісту posts.");
+
+    setUserPosts(posts);
   } catch (error) {
-    console.error("Помилка додавання даних до вмісту posts:", error);
+    console.error("Помилка отримання постів користувача:", error);
+  }
+};
+
+export const getComents = async (setComents, id) => {
+  try {
+    const db = getFirestore(app);
+    const q = query(collection(db, "posts"), where("id", "==", id));
+    const querySnapshot = await getDocs(q);
+    const posts = [];
+    querySnapshot.forEach((doc) => {
+      const postData = doc.data();
+      posts.push(postData);
+    });
+    setComents(posts);
+  } catch (error) {
+    console.error("Помилка отримання постів користувача:", error);
+  }
+};
+
+export const addComment = (id, newComent) => {
+  try {
+    const db = getFirestore(app);
+    updateDoc(doc(db, "posts", id), {
+      coments: arrayUnion(newComent),
+    });
+    // console.log(newComent);
+    console.log("addPost Коментар успішно додані до вмісту posts.");
+  } catch (error) {
+    console.error(
+      "addPost Помилка додавання Коментара до вмісту posts:",
+      error
+    );
+  }
+};
+
+export const likePost = async (Id) => {
+  try {
+    const db = getFirestore(app);
+    const querySnapshot = doc(db, "posts", Id);
+    const postDoc = await getDoc(querySnapshot);
+    const currentLikes = postDoc.data().likes || 0;
+    const newLikes = currentLikes + 1;
+    await updateDoc(querySnapshot, { likes: newLikes });
+  } catch (error) {
+    console.error("Помилка добавлення лайку:", error);
   }
 };

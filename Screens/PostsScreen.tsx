@@ -16,99 +16,32 @@ import {
   ScrollView,
 } from "react-native";
 
-import Svg, { Path } from "react-native-svg";
-import {
-  logOutSvg,
-  gridSvg,
-  plusBtnSvg,
-  userSvg,
-  messageCircle,
-  mapPin,
-} from "../assets/svgJS/svg";
+import { messageCircle, messageCircleFill, mapPin } from "../assets/svgJS/svg";
 import { SvgXml } from "react-native-svg";
-import { useNavigation, useRoute } from "@react-navigation/native";
 
 import { useDispatch, useSelector } from "react-redux";
-import {
-  addPost,
-  auth,
-  authStateChanged,
-  getD,
-  getData,
-  userData,
-} from "../config";
+import { getPosts } from "../config";
+import { changePosts } from "../redux/authSlice";
 
-const PostsScreen = ({ route, navigation }) => {
+const PostsScreen = ({ navigation }) => {
   const dispatch = useDispatch();
-  // const [posts, setPosts] = useState([
-  //   // { name: "adasdadasd", location: "sadasdasd", image: image },
-  // ]);
-  const setData = (value) => dispatch(setData(value));
 
-  const { uid } = useSelector((state: any) => state.auth);
+  const { uid, nickName, email, posts } = useSelector(
+    (state: any) => state.auth
+  );
+
+  const setPosts = (value) => dispatch(changePosts(value));
 
   useEffect(() => {
-    getD(uid);
-    authStateChanged();
-    const data = authStateChanged();
-    console.log(data);
-
-    console.log("auth", auth);
+    getPosts(setPosts);
   }, []);
-
-  // const { name, location, image, userLocation } = route.params;
-  const [userDataLoaded, setUserDataLoaded] = useState(false);
-
-  useEffect(() => {
-    // const newPost = {
-    //   id: Math.random(),
-    //   name: name,
-    //   location: location,
-    //   userLocation: userLocation,
-    //   image: image,
-    // };
-    // setPosts((prevPosts) => [...prevPosts, newPost]);
-    getD(uid)
-      .then(() => setUserDataLoaded(true)) // Встановлюємо userDataLoaded в true, коли дані завантажені
-      .catch((error) => console.error("Пом отрим дан:", error));
-
-    // if (userData !== null) {
-    //   getD(uid);
-    // }
-    if (userDataLoaded) {
-      // getD(uid);
-    }
-  }, [userData, userDataLoaded, addPost]);
-
-  // const inf = getD(uid);
 
   return (
     <View style={styles.wrapper}>
-      {/* <SVGImg width={500} height={200} /> */}
-      {/* <View style={styles.header}>
-        <Text style={styles.title}>Публікації</Text>
-        <View style={styles.headerRight}>
-          <Image
-            style={[styles.svg]}
-            // tintColor="#000000"
-            source={require("../assets/svg/logOut.svg")}
-          />
-          {/* <SvgXml xml={logOutSvg} style={styles.svg} /> */}
-      {/* </View>
-      </View>  */}
-      {/* <Text>
-        name: {JSON.stringify(name)} location: {JSON.stringify(location)}
-        image: {JSON.stringify(image)}
-      </Text> */}
-
       <ScrollView>
         <View
           style={{
-            width: 345,
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            alignItems: "center",
+            width: 350,
             marginLeft: "auto",
             marginRight: "auto",
           }}
@@ -119,87 +52,53 @@ const PostsScreen = ({ route, navigation }) => {
               source={require("../assets/favicon.png")}
             />
             <View style={styles.profileDataText}>
-              <Text style={styles.profileName}>
-                {/* Natali Romanova */}
-                {userData && userData.displayName}
-                {userData && userData.uid}
-              </Text>
-              <Text style={styles.profileEmail}>
-                {/* email@example.com */}
-                {/* {uData} */}
-                {userData && userData.email}
-              </Text>
+              {/* <Text style={styles.profileName}>{uid}</Text> */}
+              <Text style={styles.profileName}>{nickName}</Text>
+              <Text style={styles.profileEmail}>{email}</Text>
             </View>
           </View>
           <View style={styles.publications}>
-            {/* <View style={styles.publication}>
-              <Image
-                style={styles.publicationImg}
-                source={require("../assets/favicon.png")}
-              />
-              <Text style={styles.publicationDescription}>Ліс</Text>
-              <View style={styles.publicationInfo}>
-                <View style={styles.publicationElem}>
-                  <SvgXml xml={messageCircle} style={styles.svg} /> */}
-
-            {/* <Image
-                    style={styles.svg}
-                    source={require("../assets/svg/messageCircle.svg")}
-                  /> */}
-
-            {/* <Text style={styles.publicationsComentNumber}>0</Text>
-                </View>
-                <View style={styles.publicationElem}>
-                  <SvgXml xml={mapPin} style={styles.svg} /> */}
-            {/* <Image
-                    style={styles.svg}
-                    source={require("../assets/svg/mapPin.svg")}
-                  /> */}
-            {/* <Text style={styles.publicationLocation}>
-                    Ivano-Frankivs'k Region, Ukraine
-                  </Text>
-                </View>
-              </View>
-            </View> */}
-
-            {userData !== null &&
-              userData.posts
+            {posts &&
+              posts
                 .filter((post) => post.name !== "")
+                .sort((a, b) => b.id.localeCompare(a.id))
                 .map((post) => {
                   return (
-                    <View
-                      style={styles.publication}
-                      // id={`${Math.random()}`}
-                      key={post.id}
-                    >
+                    <View style={styles.publication} key={post.id}>
                       <Image
                         style={styles.publicationImg}
                         source={{ uri: post.image }}
                       />
-
                       <Text style={styles.publicationDescription}>
                         {post.name}
                       </Text>
                       <View style={styles.publicationInfo}>
-                        <Pressable
+                        <TouchableOpacity
                           onPress={() =>
-                            navigation.navigate("Comments", {
+                            navigation.navigate("Коментарі", {
                               id: post.id,
-                              name: post.location,
-                              userLocation: post.userLocation,
+                              image: post.image,
+                              userID: post.uid,
                             })
                           }
                           style={styles.publicationElem}
                         >
-                          <SvgXml xml={messageCircle} style={styles.svg} />
+                          {post.coments.length === 0 ? (
+                            <SvgXml
+                              xml={messageCircle}
+                              style={[[styles.svg]]}
+                            />
+                          ) : (
+                            <SvgXml
+                              xml={messageCircleFill}
+                              style={[[styles.svg]]}
+                            />
+                          )}
 
-                          {/* <Image
-                            style={styles.svg}
-                            source={require("../assets/svg/messageCircle.svg")}
-                          /> */}
-
-                          <Text style={styles.publicationsComentNumber}>0</Text>
-                        </Pressable>
+                          <Text style={styles.publicationsComentNumber}>
+                            {post.coments.length}
+                          </Text>
+                        </TouchableOpacity>
                         <Pressable
                           onPress={() =>
                             navigation.navigate("MapScreen", {
@@ -210,10 +109,6 @@ const PostsScreen = ({ route, navigation }) => {
                         >
                           <View style={styles.publicationElem}>
                             <SvgXml xml={mapPin} style={styles.svg} />
-                            {/* <Image
-                              style={styles.svg}
-                              source={require("../assets/svg/mapPin.svg")}
-                            /> */}
                             <Text style={styles.publicationLocation}>
                               {post.location}
                             </Text>
@@ -226,20 +121,6 @@ const PostsScreen = ({ route, navigation }) => {
           </View>
         </View>
       </ScrollView>
-      {/* <View style={styles.toolbar}>
-        <Image style={styles.svg} source={require("../assets/svg/grid.svg")} /> */}
-      {/* <SvgXml xml={gridSvg} style={styles.svg} /> */}
-
-      {/* <Pressable style={styles.createBtn}>
-          <Image
-            style={styles.createBtn}
-            source={require("../assets/svg/plusBtn.svg")}
-          /> */}
-      {/* <SvgXml xml={plusBtnSvg} style={styles.svg} /> */}
-      {/* </Pressable>
-        <Image style={styles.svg} source={require("../assets/svg/user.svg")} /> */}
-      {/* <SvgXml xml={userSvg} style={styles.svg} /> */}
-      {/* </View> */}
     </View>
   );
 };
@@ -265,7 +146,7 @@ const styles = StyleSheet.create({
   },
   publicationDescription: {
     color: "#212121",
-    // fontFamily: Roboto;
+    fontFamily: "Roboto-Regular",
     fontSize: 16,
 
     fontStyle: "normal",
@@ -282,14 +163,14 @@ const styles = StyleSheet.create({
   },
   publicationsComentNumber: {
     color: "#BDBDBD",
-    // fontSamily: Roboto,
+    fontFamily: "Roboto-Regular",
     fontSize: 16,
     fontStyle: "normal",
   },
   publicationLocation: {
     color: "#212121",
     textAlign: "right",
-    // fontSamily: Roboto,
+    fontFamily: "Roboto-Regular",
     fontSize: 16,
     fontStyle: "normal",
     textDecorationLine: "underline",
@@ -347,6 +228,7 @@ const styles = StyleSheet.create({
     gap: 8,
     marginLeft: 16,
     marginTop: 32,
+    justifyContent: "center",
     alignSelf: "flex-start",
   },
 
@@ -359,45 +241,21 @@ const styles = StyleSheet.create({
   },
   profileDataText: {
     display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: "flex-start",
+    justifyContent: "flex-start",
+    alignSelf: "center",
   },
   profileName: {
     color: "#212121",
-    // font-family: Roboto,
+    fontFamily: "Roboto-Medium",
     fontSize: 13,
     fontStyle: "normal",
   },
   profileEmail: {
     color: " #rgba(33, 33, 33, 0.80)",
-    // font-family: Roboto,
+    fontFamily: "Roboto-Regular",
     fontStyle: "normal",
     fontSize: 11,
-  },
-  createBtnTxt: {
-    color: "Black",
-    textAlign: "center",
-    // fontFamily: "Roboto-Regular",
-    fontSize: 16,
-    fontStyle: "normal",
-  },
-  createBtn: {
-    width: 70,
-    height: 40,
-    flexShrink: 0,
-    // backgroundColor: "rgba(255, 108, 0, 1)",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  toolbar: {
-    flexDirection: "row",
-    justifyContent: "center",
-    gap: 39,
-    alignItems: "center",
-    paddingTop: 9,
-    paddingBottom: 34,
-    borderTopColor: "black",
-    borderTopWidth: 1,
   },
 });
 

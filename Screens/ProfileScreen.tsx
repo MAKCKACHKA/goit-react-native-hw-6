@@ -16,30 +16,36 @@ import {
   ScrollView,
 } from "react-native";
 import { SvgXml } from "react-native-svg";
-import Svg, { Circle } from "react-native-svg";
-import { SvgUri } from "react-native-svg";
-// import SVGImg from "../assets/svg/add.svg";
-//                     <SVGImg width={200} height={200} />;
-import { useNavigation, useRoute } from "@react-navigation/native";
-
 import {
   messageCircle,
   mapPin,
   logOutSvg,
   thumbsUp,
+  thumbsUpFill,
+  messageCircleFill,
 } from "../assets/svgJS/svg";
+import { getUserPosts, likePost, logOut } from "../config";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  changePosts,
+  changeUid,
+  changeUserActive,
+  changeUserPosts,
+} from "../redux/authSlice";
 
-const ProfileScreen = () => {
-  //   const [login, setLogin] = useState("");
-  //     const [emailFocused, setEmailFocused] = useState(false);
-  //   const [passwordFocused, setPasswordFocused] = useState(false);
+const ProfileScreen = ({ navigation }) => {
+  const { uid, userPosts, nickName } = useSelector((state: any) => state.auth);
+  const dispatch = useDispatch();
+  const setlogOut = (value) => dispatch(changeUid(value));
+  const setUserPosts = (value) => dispatch(changeUserPosts(value));
 
-  const [comentNumber, setComentNumber] = useState(0);
+  useEffect(() => {
+    getUserPosts(setUserPosts, uid);
+  }, []);
+
+  const setUserActive = (value) => dispatch(changeUserActive(value));
+
   const [likeNumber, setlikeNumber] = useState(0);
-
-  //   const togglePasswordVisibility = () => {
-  //     setShowPassword(!showPassword);
-  //   };
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -50,121 +56,127 @@ const ProfileScreen = () => {
       >
         <View style={{ justifyContent: "flex-end" }}>
           <ScrollView contentContainerStyle={{ justifyContent: "flex-end" }}>
-            {/* <ScrollView
-          contentContainerStyle={{
-            flexBasis: "auto",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "flex-end",
-          }}
-        > */}
             <View style={styles.wrapper}>
               <View style={styles.container}>
-                <View style={styles.headerRight}>
-                  {/* <Image
-                    style={[styles.svg]}
-                    source={require("../assets/svg/logOut.svg")}
-                  /> */}
+                <TouchableOpacity
+                  style={styles.headerRight}
+                  onPress={() => {
+                    logOut(dispatch);
+                    setlogOut("");
+                    setUserActive(false);
+                  }}
+                >
                   <SvgXml xml={logOutSvg} style={styles.svg} />
-                </View>
+                </TouchableOpacity>
                 <Image
                   style={styles.UserImage}
                   source={require("../assets/favicon.png")}
                 />
-                <Text style={styles.title}>Natali Romanova</Text>
+                <Text style={styles.title}>{nickName}</Text>
+                <View style={styles.publications}>
+                  {userPosts &&
+                    userPosts !== null &&
+                    userPosts
+                      .filter((post) => post.name !== "")
+                      .sort((a, b) => b.id.localeCompare(a.id))
+                      .map((post) => {
+                        return (
+                          <View
+                            style={styles.publication}
+                            // id={`${Math.random()}`}
+                            key={post.id}
+                          >
+                            <Image
+                              style={styles.publicationImg}
+                              source={{ uri: post.image }}
+                            />
 
-                <View style={styles.publication}>
-                  <Image
-                    style={styles.publicationImg}
-                    source={require("../assets/favicon.png")}
-                  />
-                  <Text style={styles.publicationDescription}>Ліс</Text>
-                  <View style={styles.publicationInfo}>
-                    <View style={styles.publicationElem}>
-                      {comentNumber === 0 ? (
-                        // <Image
-                        //   style={[[styles.svg]]}
-                        //   source={require("../assets/svg/messageCircle.svg")}
-                        //   //   source={require("../assets/svg/thumbsUp.svg")}
-                        // />
-                        <SvgXml xml={messageCircle} style={[[styles.svg]]} />
-                      ) : (
-                        <Image
-                          style={[[styles.svg]]}
-                          source={require("../assets/svg/messageCircleFill.svg")}
-                          //   source={require("../assets/svg/thumbsUp.svg")}
-                        />
-                      )}
+                            <Text style={styles.publicationDescription}>
+                              {post.name}
+                            </Text>
+                            <View style={styles.publicationInfo}>
+                              <View
+                                style={{
+                                  gap: 20,
+                                  flexDirection: "row",
+                                }}
+                              >
+                                <Pressable
+                                  onPress={() =>
+                                    navigation.navigate("Коментарі", {
+                                      id: post.id,
+                                      image: post.image,
+                                      comentsHolder: post.coments,
+                                      userID: post.uid,
+                                    })
+                                  }
+                                  style={styles.publicationElem}
+                                >
+                                  {post.coments.length === 0 ? (
+                                    <SvgXml
+                                      xml={messageCircle}
+                                      style={[[styles.svg]]}
+                                    />
+                                  ) : (
+                                    <SvgXml
+                                      xml={messageCircleFill}
+                                      style={[[styles.svg]]}
+                                    />
+                                  )}
+                                  <Text style={styles.publicationsNumber}>
+                                    {post.coments.length}
+                                  </Text>
+                                </Pressable>
 
-                      <Text style={styles.publicationsNumber}>
-                        {comentNumber}
-                      </Text>
-                      {likeNumber === 0 ? (
-                        // <Image
-                        //   style={[[styles.svg], { marginLeft: 24 }]}
-                        //   source={require("../assets/svg/thumbsUp.svg")}
-                        // />
-                        <SvgXml xml={thumbsUp} style={[[styles.svg]]} />
-                      ) : (
-                        <Image
-                          style={[[styles.svg], { marginLeft: 24 }]}
-                          source={require("../assets/svg/thumbsUpFill.svg")}
-                        />
-                      )}
-
-                      <Text style={styles.publicationsNumber}>
-                        {likeNumber}
-                      </Text>
-                    </View>
-                    <View style={styles.publicationElem}>
-                      <SvgXml xml={mapPin} style={styles.svg} />
-                      {/* <Image
-                        style={styles.svg}
-                        source={require("../assets/svg/mapPin.svg")}
-                      /> */}
-                      <Text style={styles.publicationLocation}>Ukraine</Text>
-                    </View>
-                  </View>
+                                <TouchableOpacity
+                                  onPress={() => {
+                                    likePost(post.id);
+                                    setTimeout(() => {
+                                      getUserPosts(setUserPosts, uid);
+                                    }, 400);
+                                  }}
+                                  style={{ flexDirection: "row" }}
+                                >
+                                  {post.likes === 0 ? (
+                                    <SvgXml
+                                      xml={thumbsUp}
+                                      style={[[styles.svg]]}
+                                    />
+                                  ) : (
+                                    <SvgXml
+                                      xml={thumbsUpFill}
+                                      style={[[styles.svg]]}
+                                    />
+                                  )}
+                                  <Text style={styles.publicationsNumber}>
+                                    {post.likes}
+                                  </Text>
+                                </TouchableOpacity>
+                              </View>
+                              <TouchableOpacity
+                                onPress={() =>
+                                  navigation.navigate("MapScreen", {
+                                    location: post.location,
+                                    userLocation: post.userLocation,
+                                  })
+                                }
+                              >
+                                <View style={styles.publicationElem}>
+                                  <SvgXml xml={mapPin} style={styles.svg} />
+                                  <Text style={styles.publicationLocation}>
+                                    {post.location}
+                                  </Text>
+                                </View>
+                              </TouchableOpacity>
+                            </View>
+                          </View>
+                        );
+                      })}
                 </View>
               </View>
             </View>
           </ScrollView>
         </View>
-
-        {/* <View style={styles.toolbar}>
-          <View
-            style={{
-              width: 40,
-              height: 40,
-              alignSelf: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Image
-              style={styles.svg}
-              source={require("../assets/svg/grid.svg")}
-            />
-          </View> */}
-        {/* <SvgXml xml={gridSvg} style={styles.svg} /> */}
-
-        {/* <Pressable style={styles.userBtn}>
-            <Image
-              style={[
-                [styles.svg],
-                {
-                  tintColor: "rgba(255, 255, 255, 1)",
-                },
-              ]}
-              source={require("../assets/svg/user.svg")}
-            /> */}
-        {/* <SvgXml xml={userSvg} style={styles.svg} /> */}
-        {/* </Pressable>
-          <Image
-            style={{ width: 40, height: 40, alignSelf: "center" }}
-            source={require("../assets/svg/add.svg")}
-          /> */}
-        {/* <SvgXml xml={userSvg} style={styles.svg} /> */}
-        {/* </View> */}
       </ImageBackground>
     </TouchableWithoutFeedback>
   );
@@ -173,7 +185,6 @@ const ProfileScreen = () => {
 const styles = StyleSheet.create({
   headerRight: {
     position: "absolute",
-    // marginRight: 10,
     top: 22,
     right: 16,
   },
@@ -198,7 +209,7 @@ const styles = StyleSheet.create({
   },
   publicationDescription: {
     color: "#212121",
-    // fontFamily: Roboto;
+    fontFamily: "Roboto-Regular",
     fontSize: 16,
 
     fontStyle: "normal",
@@ -215,14 +226,14 @@ const styles = StyleSheet.create({
   },
   publicationsNumber: {
     color: "#BDBDBD",
-    // fontSamily: Roboto,
+    fontFamily: "Roboto-Regular",
     fontSize: 16,
     fontStyle: "normal",
   },
   publicationLocation: {
     color: "#212121",
     textAlign: "right",
-    // fontSamily: Roboto,
+    fontFamily: "Roboto-Regular",
     fontSize: 16,
     fontStyle: "normal",
     textDecorationLine: "underline",
@@ -258,7 +269,7 @@ const styles = StyleSheet.create({
     position: "relative",
     width: "100%",
     marginTop: 230,
-
+    minHeight: 450,
     flexShrink: 0,
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
@@ -266,7 +277,7 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 0,
   },
   title: {
-    // fontFamily: "Roboto-Medium",
+    fontFamily: "Roboto-Medium",
     marginTop: 92,
     // fontWeight: "bold",
     marginBottom: 20,

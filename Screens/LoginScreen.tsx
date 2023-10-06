@@ -20,21 +20,14 @@ import { useNavigation } from "@react-navigation/native";
 import { useDispatch, useSelector } from "react-redux";
 import {
   changeEmail,
-  changeLogin,
   changePassword,
-  changeUid,
+  changeUserActive,
 } from "../redux/authSlice";
-import {
-  // getData,
-  signUp,
-  docUid,
-} from "../config";
+import { signUp } from "../config";
 
 const LoginScreen = () => {
   const navigation = useNavigation();
 
-  // const [email, setEmail] = useState("");
-  // const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [emailFocused, setEmailFocused] = useState(false);
   const [passwordFocused, setPasswordFocused] = useState(false);
@@ -43,25 +36,23 @@ const LoginScreen = () => {
     setShowPassword(!showPassword);
   };
 
-  const { email, password, uid } = useSelector((state: any) => state.auth);
+  const { email, password, uid, userActive } = useSelector(
+    (state: any) => state.auth
+  );
 
   const dispatch = useDispatch();
   const setEmail = (value) => dispatch(changeEmail(value));
   const setPassword = (value) => dispatch(changePassword(value));
-
-  const setUid = (value) => dispatch(changeUid(value));
+  const setUserActive = (value) => dispatch(changeUserActive(value));
 
   useEffect(() => {
-    if (docUid !== "") {
-      setUid(docUid);
+    if (uid !== "" && uid !== null) {
+      setUserActive(true);
     }
-  }, [docUid]);
-
-  // const handleLogin = () => {
-  //   console.log(`email: ${email}, password: ${password}`);
-  //   setEmail("");
-  //   setPassword("");
-  // };
+    if (userActive) {
+      navigation.navigate("Home" as never);
+    }
+  }, [userActive, navigation, uid]);
 
   return (
     <ImageBackground
@@ -69,15 +60,10 @@ const LoginScreen = () => {
       style={styles.backgroundImage}
       resizeMode="stretch"
     >
-      {/* <Pressable onPress={Keyboard.dismiss}> */}
-
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={styles.wrapper}>
           <View style={styles.container}>
-            <Text style={styles.title}>
-              Увійти
-              {/* {uid} */}
-            </Text>
+            <Text style={styles.title}>Увійти</Text>
 
             <KeyboardAvoidingView
               behavior={Platform.OS == "ios" ? "padding" : undefined}
@@ -117,41 +103,31 @@ const LoginScreen = () => {
                   </Text>
                 </Pressable>
               </View>
-              {/* <Button
-                title="Увійти"
-                // style={styles.registerButton}
-                color={"#FF6C00"}
-                onPress={handleLogin}
-              /> */}
               <Pressable
                 style={styles.registerButton}
-                // onPress={handleLogin}
                 onPress={() => {
-                  // handleLogin;
-                  // getData();
-                  signUp(email, password);
-                  if (docUid !== "") {
-                    setUid(docUid);
-                    console.log("docUid pvsyty");
-                  }
-
-                  navigation.navigate("Home");
-                  // setPassword("");
+                  signUp(dispatch, email, password);
+                  setTimeout(() => {
+                    if (uid !== "" && uid !== null) {
+                      navigation.navigate("Home" as never);
+                    }
+                  }, 1000);
+                  setTimeout(() => {
+                    // setPassword("");
+                  }, 5000);
                 }}
               >
                 <Text style={styles.registerButtonText}>Увійти</Text>
               </Pressable>
-              {/* <Pressable onPress={handleLogin}> */}
               <Text
                 style={styles.RegisterLink}
-                onPress={() => navigation.navigate("Registration")}
+                onPress={() => navigation.navigate("Registration" as never)}
               >
                 Немає акаунту?{" "}
                 <Text style={{ textDecorationLine: "underline" }}>
                   Зареєструватися
                 </Text>
               </Text>
-              {/* </Pressable> */}
             </KeyboardAvoidingView>
           </View>
         </View>
@@ -189,7 +165,7 @@ const styles = StyleSheet.create({
     // borderBottomRightRadius: 0,
   },
   title: {
-    // fontFamily: "Roboto-Medium",
+    fontFamily: "Roboto-Medium",
     marginTop: 32,
     marginBottom: 33,
 
@@ -211,7 +187,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#E8E8E8",
 
-    // fontFamily: "Roboto-Regular",
+    fontFamily: "Roboto-Regular",
     fontSize: 16,
   },
   passwordContainer: {
@@ -231,13 +207,13 @@ const styles = StyleSheet.create({
     borderColor: "#FF6C00",
   },
   passwordInput: {
-    // fontFamily: "Roboto-Regular",
+    fontFamily: "Roboto-Regular",
     fontSize: 16,
     flex: 1,
     padding: 10,
   },
   showPasswordText: {
-    // fontFamily: "Roboto-Regular",
+    fontFamily: "Roboto-Regular",
     fontSize: 16,
     color: "#1B4371",
   },
@@ -252,14 +228,14 @@ const styles = StyleSheet.create({
     backgroundColor: "#FF6C00",
     color: "white",
     textAlign: "center",
-    // fontFamily: "Roboto-Regular",
+    fontFamily: "Roboto-Regular",
     fontSize: 16,
     fontStyle: "normal",
   },
   registerButtonText: {
     color: "#FFF",
     textAlign: "center",
-    // fontFamily: "Roboto-Regular",
+    fontFamily: "Roboto-Regular",
     fontSize: 16,
     fontStyle: "normal",
   },
@@ -267,7 +243,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginTop: 16,
     color: "#1B4371",
-    // fontFamily: "Roboto-Regular",
+    fontFamily: "Roboto-Regular",
     fontSize: 16,
     fontStyle: "normal",
   },

@@ -26,10 +26,12 @@ import { SvgXml } from "react-native-svg";
 import { Camera } from "expo-camera";
 import * as MediaLibrary from "expo-media-library";
 
-import MapView, { Marker } from "react-native-maps";
+// import MapView, { Marker } from "react-native-maps";
 import * as Location from "expo-location";
-import { addPost } from "../config";
+
+import { createPost, getPosts, getUserPosts } from "../config";
 import { useDispatch, useSelector } from "react-redux";
+import { changePosts, changeUserPosts } from "../redux/authSlice";
 
 const CreatePostsScreen = ({ navigation }) => {
   const [name, setName] = useState("");
@@ -41,26 +43,27 @@ const CreatePostsScreen = ({ navigation }) => {
 
   const [userLocation, setUserLocation] = useState(null);
 
-  useEffect(() => {
-    (async () => {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        alert("Доступ до геолокації відхилено.");
-        return;
-      }
-      let location = await Location.getCurrentPositionAsync({});
-      setUserLocation(location);
-    })();
-  }, [Location.getCurrentPositionAsync({})]);
-
   // useEffect(() => {
-  //   if (userLocation) {
-  //     // Коли отримуємо нове місцеположення користувача, встановлюємо його як значення `location`
-  //     setLocation(
-  //       `Місцевість: ${userLocation.coords.latitude}, ${userLocation.coords.longitude}`
-  //     );
-  //   }
-  // }, [userLocation]);
+  //   (async () => {
+  //     let { status } = await Location.requestForegroundPermissionsAsync();
+  //     if (status !== "granted") {
+  //       alert("Доступ до геолокації відхилено.");
+  //       return;
+  //     }
+  //     let location = await Location.getCurrentPositionAsync({});
+  //     setUserLocation(location);
+  //   })();
+  // }, []);
+
+  const getCurrentLocation = async () => {
+    let { status } = await Location.requestForegroundPermissionsAsync();
+    if (status !== "granted") {
+      alert("Доступ до геолокації відхилено.");
+      return;
+    }
+    let location = await Location.getCurrentPositionAsync({});
+    setUserLocation(location);
+  };
 
   const [hasPermission, setHasPermission] = useState(null);
   const [cameraRef, setCameraRef] = useState(null);
@@ -83,62 +86,68 @@ const CreatePostsScreen = ({ navigation }) => {
       setImage(uri);
     }
   };
+
   // useEffect(() => {
   //   navigation.setOptions({
   //     // headerShown: false,
   //     // title: "sadasd",
   //   });
   // }, []);
-  const { uid } = useSelector((state: any) => state.auth);
 
-  const handlePublish = async () => {
-    // if (name !== "" && location !== "" && image !== "") {
-    addPost(uid, {
-      id: Math.random(),
-      name: name,
-      location: location,
-      userLocation: userLocation,
-      image: image,
-    });
-    // }
+  const { uid, nickName } = useSelector((state: any) => state.auth);
+  const dispatch = useDispatch();
 
-    setName("");
-    setImage("");
-    setLocation("");
-    setUserLocation(null);
+  // const [userPosts, setUserPosts] = useState(null);
+  // const [posts, setPosts] = useState([]);
+  const setPosts = (value) => dispatch(changePosts(value));
+  const setUserPosts = (value) => dispatch(changeUserPosts(value));
 
-    // setTimeout(() => {
-    navigation.navigate("Публікації", {
-      // name: name,
-      // location: location,
-      // userLocation: userLocation,
-      // image: image,
-    });
-    // }, 5000);
+  const usePosts = () => {
+    getPosts(setPosts);
+    getUserPosts(setUserPosts, uid);
   };
 
-  function degreesToRadians(angle) {
-    return angle * (Math.PI / 180);
-  }
-  function kMToLongitudes(km, atLatitude) {
-    return (km * 0.0089831) / Math.cos(degreesToRadians(atLatitude));
-  }
+  useEffect(() => {
+    usePosts();
+    // getCurrentLocation();
+  }, []);
+
+  useEffect(() => {
+    getCurrentLocation();
+  }, [location]);
+
+  const handlePublish = async () => {
+    // getCurrentLocation();
+
+    setTimeout(() => {
+      createPost({
+        nickName: nickName,
+        uid: uid,
+        coments: [],
+        id: Date.now().toString(),
+        name: name,
+        location: location,
+        userLocation: userLocation,
+        image: image,
+        likes: 0,
+      });
+    }, 20);
+
+    setTimeout(() => {
+      usePosts();
+
+      navigation.navigate("Публікації");
+      setName("");
+      setImage("");
+      setLocation("");
+    }, 200);
+
+    // setUserLocation(null);
+  };
+
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <ScrollView style={styles.wrapper}>
-        {/* <View style={styles.header}>
-          <Text style={styles.title}>Створити публікацію</Text>
-          <View style={styles.headerLeft}>
-            <Image
-              style={[styles.svg, { alignSelf: "center" }]}
-              source={require("../assets/svg/arrowLeft.svg")}
-            /> */}
-        {/* <SvgXml
-              xml={arrowLeft}
-              style={[styles.svg, { alignSelf: "center", top: 10 }]}
-            /> */}
-        {/* </View> */}
-        {/* </View> */}
         <View style={styles.container}>
           <View style={styles.publication}>
             <View style={styles.imageholder}>
@@ -151,23 +160,14 @@ const CreatePostsScreen = ({ navigation }) => {
                   ref={setCameraRef}
                 />
               )}
-              <Pressable
-                style={styles.cameraHolder}
-                onPress={handleTakePicture}
-              >
-                {/* <Image
-                style={styles.svg}
-                tintColor={"rgba(189, 189, 189, 1)"}
-                source={require("../assets/svg/camera.svg")}
-              /> */}
-                {/* <SvgXml xml={camera} style={[styles.svg]} /> */}
-                {/* <Image
-                  style={styles.svg}
-                  tintColor={"rgba(189, 189, 189, 1)"}
-                  source={require("../assets/svg/cameraBlack.svg")}
-                /> */}
-                <SvgXml xml={cameraBlack} style={[styles.svg]} />
-              </Pressable>
+              {!image && (
+                <Pressable
+                  style={styles.cameraHolder}
+                  onPress={handleTakePicture}
+                >
+                  <SvgXml xml={cameraBlack} style={[styles.svg]} />
+                </Pressable>
+              )}
             </View>
             {image === "" ? (
               <Text style={styles.photoTxt}>Завантажте фото</Text>
@@ -195,10 +195,6 @@ const CreatePostsScreen = ({ navigation }) => {
                   locationFocused === true && styles.focusedInput,
                 ]}
               >
-                {/* <Image
-                  style={styles.svg}
-                  source={require("../assets/svg/mapPin.svg")}
-                /> */}
                 <SvgXml xml={mapPin} style={styles.svg} />
 
                 <TextInput
@@ -211,72 +207,39 @@ const CreatePostsScreen = ({ navigation }) => {
                 />
               </View>
 
-              {/* {userLocation && (
-                <MapView
-                  style={styles.imageholder}
-                  showsUserLocation={true}
-                  followsUserLocation={true}
-                  minZoomLevel={10}
-                  region={{
-                    latitude: userLocation.coords.latitude,
-                    latitudeDelta: 0.00001,
-                    longitude: userLocation.coords.longitude,
-                    longitudeDelta: kMToLongitudes(
-                      1.0,
-                      userLocation.coords.latitude
-                    ),
-
-                    // longitudeDelta: userLocation.coords.latitude,
-                    // latitudeDelta: userLocation.coords.longitude,
-                  }}
-                >
-                  <Marker
-                    title={name}
-                    coordinate={{
-                      latitude: userLocation.coords.latitude,
-                      longitude: userLocation.coords.longitude,
-                    }}
-                    description="location"
-                  />
-                </MapView>
-              )} */}
-
-              {/* <MapView
-                style={styles.imageholder}
-                // showsUserLocation={true}
-                // followsUserLocation={true}
-                region={{
-                  latitude: 37.78825,
-                  longitude: -122.4324,
-                  latitudeDelta: 0.0922,
-                  longitudeDelta: 0.0421,
-                }}
-                mapType="standard"
-                minZoomLevel={1}
-                onMapReady={() => console.log("Map is ready")}
-                onRegionChange={() => console.log("Region change")}
-              >
-                <Marker
-                  title="I am here"
-                  coordinate={{ latitude: 37.78825, longitude: -122.4324 }}
-                  description="Hello"
-                />
-              </MapView> */}
-
               <Pressable
-                style={styles.publishBtn}
+                style={[
+                  styles.publishBtn,
+                  image !== "" &&
+                    location !== "" &&
+                    name !== "" &&
+                    styles.publishBtnActive,
+                ]}
                 onPress={handlePublish}
                 disabled={!image || !name || !location}
               >
-                <Text style={styles.publishBtnText}>Опублікувати</Text>
+                <Text
+                  style={[
+                    styles.publishBtnText,
+                    image !== "" &&
+                      location !== "" &&
+                      name !== "" &&
+                      styles.publishBtnActive,
+                  ]}
+                >
+                  Опублікувати
+                </Text>
               </Pressable>
 
               <View style={styles.toolbar}>
-                <Pressable style={styles.delBtn}>
-                  {/* <Image
-                    style={styles.svg}
-                    source={require("../assets/svg/trash.svg")}
-                  /> */}
+                <Pressable
+                  style={styles.delBtn}
+                  onPress={() => {
+                    setName("");
+                    setImage("");
+                    setLocation("");
+                  }}
+                >
                   <SvgXml xml={trash} style={styles.svg} />
                 </Pressable>
               </View>
@@ -327,7 +290,7 @@ const styles = StyleSheet.create({
   photoTxt: {
     top: 8,
     color: "#BDBDBD",
-    // font-family: Roboto;
+    fontFamily: "Roboto-Regular",
     fontSize: 16,
     fontStyle: "normal",
     marginBottom: 28,
@@ -404,7 +367,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#E8E8E8",
 
-    // fontFamily: "Roboto-Regular",
+    fontFamily: "Roboto-Regular",
     fontSize: 16,
   },
   locationContainer: {
@@ -424,7 +387,7 @@ const styles = StyleSheet.create({
     borderColor: "#FF6C00",
   },
   locationInput: {
-    // fontFamily: "Roboto-Regular",
+    fontFamily: "Roboto-Regular",
     fontSize: 16,
     flex: 1,
     padding: 10,
@@ -434,12 +397,11 @@ const styles = StyleSheet.create({
     marginTop: 32,
 
     borderRadius: 100,
-    backgroundColor: "#FF6C00",
-    // backgroundColor: "#F6F6F6",
+    backgroundColor: "#F6F6F6",
 
     color: "white",
     textAlign: "center",
-    // fontFamily: "Roboto-Regular",
+    fontFamily: "Roboto-Regular",
     fontSize: 16,
     fontStyle: "normal",
   },
@@ -447,9 +409,13 @@ const styles = StyleSheet.create({
     color: "#BDBDBD",
     // color: "#FFF",
     textAlign: "center",
-    // fontFamily: "Roboto-Regular",
+    fontFamily: "Roboto-Regular",
     fontSize: 16,
     fontStyle: "normal",
+  },
+  publishBtnActive: {
+    color: "#FFF",
+    backgroundColor: "#FF6C00",
   },
 });
 

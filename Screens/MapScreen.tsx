@@ -86,15 +86,19 @@ const styles = StyleSheet.create({
   },
   backButton: {
     position: "absolute",
-    top: 30,
-    left: 30,
-    padding: 10,
+    bottom: 30,
+    right: "15%",
     backgroundColor: "#FF6C00",
     borderRadius: 5,
     zIndex: 10,
+    width: 125,
+    height: 50,
+    alignItems: "center",
+    justifyContent: "center",
   },
   backButtonText: {
     color: "white",
+    fontSize: 24,
   },
 
   container: {

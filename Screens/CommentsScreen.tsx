@@ -18,165 +18,158 @@ import {
 
 import { arrowLeft, Send } from "../assets/svgJS/svg";
 import { SvgXml } from "react-native-svg";
+import { addComment, getComents, getPosts, getUserPosts } from "../config";
+import { useDispatch, useSelector } from "react-redux";
+import { changePosts, changeUserPosts } from "../redux/authSlice";
+
+function formatDate(timestamp) {
+  const months = [
+    "січня",
+    "лютого",
+    "березня",
+    "квітня",
+    "травня",
+    "червня",
+    "липня",
+    "серпня",
+    "вересня",
+    "жовтня",
+    "листопада",
+    "грудня",
+  ];
+
+  const date = new Date(timestamp);
+
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = months[date.getMonth()];
+  const year = date.getFullYear();
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+
+  return `${day} ${month}, ${year} | ${hours}:${minutes}`;
+}
 
 const CommentsScreen = ({ route, navigation }) => {
   const [coment, setСoment] = useState("");
+  const { id, image, userID } = route.params;
 
-  const { id, location, image, userLocation } = route.params;
+  const { uid } = useSelector((state: any) => state.auth);
+  const dispatch = useDispatch();
 
-  //   const [showPassword, setShowPassword] = useState(false);
-  const handleSend = () => {
-    console.log(`Коментар:  ${coment}`);
-    setСoment("");
+  const setPosts = (value) => dispatch(changePosts(value));
+  const setUserPosts = (value) => dispatch(changeUserPosts(value));
+
+  const [comentsPost, setСomentsPost] = useState([]);
+
+  const usePosts = () => {
+    getPosts(setPosts);
+    getUserPosts(setUserPosts, uid);
+    getComents(setСomentsPost, id);
   };
 
+  useEffect(() => {
+    usePosts();
+    console.log(uid, userID);
+  }, []);
+
+  const handleSend = () => {
+    const newComent = {
+      user: uid,
+      text: coment,
+      date: formatDate(Date.now()),
+    };
+    addComment(id, newComent);
+    console.log(`Коментар:  ${coment}`);
+
+    setСoment("");
+    usePosts();
+  };
+  useEffect(() => {
+    navigation.setOptions({
+      headerShown: true,
+      // title: "sadasd",
+      headerLeft: () => (
+        <TouchableOpacity
+          onPress={() => navigation.navigate("Home")}
+          style={{ left: 20 }}
+        >
+          <SvgXml xml={arrowLeft} style={styles.svg} />
+        </TouchableOpacity>
+      ),
+    });
+  }, []);
   const [inputFocused, setinputFocused] = useState(false);
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <View style={styles.wrapper}>
-        <View style={styles.header}>
-          <Text style={styles.title}>Коментарі{id}</Text>
-          <View style={styles.headerLeft}>
-            {/* <Image
-              style={[styles.svg, { alignSelf: "center" }]}
-              source={require("../assets/svg/arrowLeft.svg")}
-            /> */}
-            <SvgXml
-              xml={arrowLeft}
-              style={[styles.svg, { alignSelf: "center", top: 10 }]}
-            />
-          </View>
-        </View>
-
-        <ScrollView
-          contentContainerStyle={{ flexGrow: 1 }}
-          keyboardShouldPersistTaps="always"
-          decelerationRate="normal"
-        >
+    // <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+    <View style={styles.wrapper}>
+      <ScrollView>
+        <View>
+          <Image style={styles.publicationImg} source={{ uri: image }} />
           <View>
-            <Image
-              style={styles.publicationImg}
-              source={require("../assets/favicon.png")}
-            />
-            <View style={styles.coments}>
-              <View style={styles.coment}>
-                <Image
-                  style={styles.miniImage}
-                  source={require("../assets/favicon.png")}
-                />
-                <View style={styles.comentData}>
-                  <Text style={styles.comentText}>
-                    Really love your most recent photo. I’ve been trying to
-                    capture the same thing for a few months and would love some
-                    tips!
-                  </Text>
-                  <Text style={styles.comentDate}>09 червня, 2020 | 08:40</Text>
-                </View>
+            {comentsPost.map((post, index) => (
+              <View key={index} style={styles.coments}>
+                {post.coments.map((item, itemIndex) => (
+                  <View key={itemIndex}>
+                    {uid === item.user ? (
+                      <View style={styles.MyComent} key={index}>
+                        <Image
+                          style={styles.miniImage}
+                          source={{ uri: image }}
+                        />
+                        <View style={styles.MycomentData}>
+                          <Text style={styles.comentText}>{item.text}</Text>
+                          <Text style={styles.MycomentDate}>{item.date}</Text>
+                        </View>
+                      </View>
+                    ) : (
+                      <View style={styles.coment} key={index}>
+                        <Image
+                          style={styles.miniImage}
+                          source={{ uri: image }}
+                        />
+                        <View style={styles.MycomentData}>
+                          <Text style={styles.comentText}>{item.text}</Text>
+                          <Text style={styles.comentDate}>{item.date}</Text>
+                        </View>
+                      </View>
+                    )}
+                  </View>
+                ))}
               </View>
-              <View style={styles.MyComent}>
-                <Image
-                  style={styles.miniImage}
-                  source={require("../assets/favicon.png")}
-                />
-                <View style={styles.MycomentData}>
-                  <Text style={styles.comentText}>
-                    Really love your most recent photo. I’ve been trying to
-                    capture the same thing for a few months and would love some
-                    tips!
-                  </Text>
-                  <Text style={styles.comentDate}>09 червня, 2020 | 08:40</Text>
-                </View>
-              </View>
-              <View style={styles.coment}>
-                <Image
-                  style={styles.miniImage}
-                  source={require("../assets/favicon.png")}
-                />
-                <View style={styles.comentData}>
-                  <Text style={styles.comentText}>
-                    Really love your most recent photo. I’ve been trying to
-                    capture the same thing for a few months and would love some
-                    tips!
-                  </Text>
-                  <Text style={styles.comentDate}>09 червня, 2020 | 08:40</Text>
-                </View>
-              </View>
-              <View style={styles.MyComent}>
-                <Image
-                  style={styles.miniImage}
-                  source={require("../assets/favicon.png")}
-                />
-                <View style={styles.MycomentData}>
-                  <Text style={styles.comentText}>
-                    Really love your most recent photo. I’ve been trying to
-                    capture the same thing for a few months and would love some
-                    tips!
-                  </Text>
-                  <Text style={styles.comentDate}>09 червня, 2020 | 08:40</Text>
-                </View>
-              </View>
-              <View style={styles.coment}>
-                <Image
-                  style={styles.miniImage}
-                  source={require("../assets/favicon.png")}
-                />
-                <View style={styles.comentData}>
-                  <Text style={styles.comentText}>
-                    Really love your most recent photo. I’ve been trying to
-                    capture the same thing for a few months and would love some
-                    tips!
-                  </Text>
-                  <Text style={styles.comentDate}>09 червня, 2020 | 08:40</Text>
-                </View>
-              </View>
-              <View style={styles.MyComent}>
-                <Image
-                  style={styles.miniImage}
-                  source={require("../assets/favicon.png")}
-                />
-                <View style={styles.MycomentData}>
-                  <Text style={styles.comentText}>
-                    Really love your most recent photo. I’ve been trying to
-                    capture the same thing for a few months and would love some
-                    tips!
-                  </Text>
-                  <Text style={styles.comentDate}>09 червня, 2020 | 08:40</Text>
-                </View>
-              </View>
-            </View>
+            ))}
           </View>
-        </ScrollView>
-        <View style={styles.toolbar}>
-          <KeyboardAvoidingView
-            behavior={Platform.OS == "ios" ? "padding" : "height"}
-          >
-            <View
-              style={[
-                styles.InputContainer,
-                inputFocused === true && styles.focusedInput,
-              ]}
-            >
-              <TextInput
-                value={coment}
-                style={styles.input}
-                placeholder="Коментувати..."
-                onChangeText={setСoment}
-                onFocus={() => setinputFocused(true)}
-                onBlur={() => setinputFocused(false)}
-              />
-              <Pressable onPress={handleSend}>
-                {/* <Image
-                  style={styles.send}
-                  source={require("../assets/svg/Send.svg")}
-                /> */}
-                <SvgXml xml={Send} style={styles.send} />
-              </Pressable>
-            </View>
-          </KeyboardAvoidingView>
         </View>
+      </ScrollView>
+      <View style={styles.toolbar}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS == "ios" ? "padding" : "height"}
+        >
+          <View
+            style={[
+              styles.InputContainer,
+              inputFocused === true && styles.focusedInput,
+            ]}
+          >
+            <TextInput
+              value={coment}
+              style={styles.input}
+              placeholder="Коментувати..."
+              onChangeText={setСoment}
+              onFocus={() => setinputFocused(true)}
+              onBlur={() => setinputFocused(false)}
+            />
+            <Pressable
+              disabled={!coment}
+              onPress={handleSend}
+              style={styles.send}
+            >
+              <SvgXml xml={Send} style={styles.send} />
+            </Pressable>
+          </View>
+        </KeyboardAvoidingView>
       </View>
-    </TouchableWithoutFeedback>
+    </View>
   );
 };
 
@@ -206,7 +199,7 @@ const styles = StyleSheet.create({
   title: {
     color: "#212121",
     textAlign: "center",
-    // fontFamily: Roboto,
+    fontFamily: "Roboto-Regular",
     // flex: 1,
     fontSize: 17,
     fontStyle: "normal",
@@ -221,15 +214,14 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     alignSelf: "center",
-    // right: 10,
   },
 
   coments: {
     marginTop: 32,
-    marginBottom: 52,
+    marginBottom: 40,
     flex: 1,
     alignItems: "center",
-    gap: 52,
+    gap: 32,
   },
   coment: {
     flexShrink: 0,
@@ -253,7 +245,7 @@ const styles = StyleSheet.create({
     borderRadius: 28,
   },
   comentData: {
-    top: 12,
+    // top: 12,
     flex: 1,
     alignItems: "flex-end",
     gap: 8,
@@ -265,22 +257,35 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   MycomentData: {
-    top: 12,
+    // top: 12,
     flex: 1,
     gap: 8,
     width: 267,
+    borderRadius: 6,
+    padding: 16,
+    backgroundColor: "rgba(0, 0, 0, 0.03)",
   },
   comentText: {
     color: "#212121",
-    // font-family: Roboto,
+    fontFamily: "Roboto-Regular",
     fontSize: 13,
     fontStyle: "normal",
   },
   comentDate: {
     color: "#BDBDBD",
-    // fontFamily: "Roboto-Regular",
+    fontFamily: "Roboto-Regular",
     fontStyle: "normal",
     fontSize: 11,
+    // right: 16,
+    // alignSelf: "flex-end",
+  },
+  MycomentDate: {
+    color: "#BDBDBD",
+    fontFamily: "Roboto-Regular",
+    fontStyle: "normal",
+    fontSize: 11,
+    // right: 16,
+    alignSelf: "flex-end",
   },
 
   toolbar: {
@@ -290,8 +295,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingTop: 9,
     paddingBottom: 34,
-    borderTopColor: "black",
-    borderTopWidth: 1,
+    // borderTopColor: "black",
+    // borderTopWidth: 1,
   },
 
   InputContainer: {
@@ -311,8 +316,8 @@ const styles = StyleSheet.create({
     width: 343,
     height: 50,
     flexShrink: 0,
-    // fontFamily: "Roboto-Regular",
-    color: "#BDBDBD",
+    fontFamily: "Roboto-Regular",
+    // color: "#BDBDBD",
     fontSize: 16,
     flex: 1,
     padding: 16,
